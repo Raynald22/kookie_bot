@@ -21,10 +21,24 @@ class Bot {
 
         this.client.on(Events.MessageCreate, async message => {
             if (message.author.bot) return;  // Ignore bot messages
+
+            // Handle prefix commands
             if (message.content.startsWith(config.PREFIX)) {
                 const args = message.content.slice(config.PREFIX.length).trim().split(/ +/);
                 const commandName = args.shift().toLowerCase();
                 await this.commandHandler.handlePrefixCommand(commandName, message, args);
+            }
+
+            // Handle user mentions for roasting
+            if (message.mentions.users.size > 0) {
+                message.mentions.users.forEach(user => {
+                    if (user.username !== 'chikiseribuan') {  // Exclude specific user
+                        const roastMessage = this.generateRoast(user);
+                        message.channel.send(roastMessage);
+                    } else {
+                        message.channel.send('keren');
+                    }
+                });
             }
         });
 
@@ -33,6 +47,18 @@ class Bot {
                 await this.commandHandler.handleSlashCommand(interaction);
             }
         });
+    }
+
+    generateRoast(user) {
+        const insults = [
+            'kocak',
+            'orang gila',
+            'boren',
+            '🐷',
+            'bau',
+        ];
+        const roast = `<@${user.id}> ${insults[Math.floor(Math.random() * insults.length)]}`;
+        return roast;
     }
 
     async registerCommands() {
